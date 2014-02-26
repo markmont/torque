@@ -1177,6 +1177,16 @@ int req_deletejob(
 
   if (strcasecmp(preq->rq_ind.rq_delete.rq_objname,"all") == 0)
     {
+    /* Deleting all jobs is only for operators and managers.
+     * Check if request is authorized */
+    if ((preq->rq_perm & (ATR_DFLAG_OPRD | ATR_DFLAG_OPWR |
+                          ATR_DFLAG_MGRD | ATR_DFLAG_MGWR)) == 0)
+      {
+      req_reject(PBSE_PERM, 0, preq, NULL,
+        "must have operator or manager privilege to use \"qdel all\"; try \"qdel `qselect -u $USER`\" instead");
+
+      return(PBSE_NONE);
+      }
     handle_delete_all(preq, preq_tmp, Msg);
     }
   else
